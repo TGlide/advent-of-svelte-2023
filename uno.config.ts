@@ -3,6 +3,7 @@ import { defineConfig, type DynamicMatcher, type Rule } from 'unocss';
 import { colors } from './src/styles/colors';
 import presetIcons from '@unocss/preset-icons';
 import presetUno from '@unocss/preset-uno';
+import presetWebFonts from '@unocss/preset-web-fonts';
 
 function pxToRem(num: number) {
 	return `${num / 16}rem`;
@@ -13,15 +14,35 @@ const colorRules: Rule[] = [
 	['text', 'color'],
 	['bg', 'background-color'],
 	['bc', 'border-color']
-].map(([prefix, property]) => [
-	new RegExp(`^${prefix}-(.+)$`),
-	((match) => {
-		if (!Object.keys(colors).includes(match[1])) {
-			return;
-		}
+].flatMap(([prefix, property]) => [
+	[
+		new RegExp(`^${prefix}-(.+)$`),
+		((match) => {
+			if (!Object.keys(colors).includes(match[1])) {
+				return;
+			}
 
-		return { [property]: `var(--clr-${match[1]});` };
-	}) as DynamicMatcher
+			return { [property]: `var(--clr-${match[1]});` };
+		}) as DynamicMatcher
+	],
+	[
+		new RegExp(`^${prefix}-(.+)/(\\d+)$`),
+		((match) => {
+			if (!Object.keys(colors).includes(match[1])) {
+				return;
+			}
+
+			const hex = colors[match[1]];
+			const alpha = parseInt(match[2]) / 100;
+			const hexWithAlpha =
+				hex +
+				Math.round(alpha * 255)
+					.toString(16)
+					.padStart(2, '0');
+
+			return { [property]: hexWithAlpha };
+		}) as DynamicMatcher
+	]
 ]);
 
 const spacingRules: Rule[] = [
@@ -76,10 +97,12 @@ const spacingRules: Rule[] = [
 
 export default defineConfig({
 	rules: [...colorRules, ...spacingRules],
-	presets: [presetUno(), presetIcons()],
+	presets: [presetUno(), presetIcons(), presetWebFonts({})],
 	theme: {
 		fontFamily: {
-			christmas: ['Mountains of Christmas', 'cursive']
+			sans: ['Inter Tight Variable', 'sans-serif'],
+			christmas: ['Mountains of Christmas', 'cursive'],
+			mono: ['IBM Plex Mono', 'monospace']
 		}
 	},
 	content: {

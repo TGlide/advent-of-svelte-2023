@@ -1,3 +1,7 @@
+body {
+	font-family: 'Inter Tight Variable', sans-serif;
+}
+
 *:focus {
-  outline: 1px solid var(--clr-gray-1) !important;
+	outline: 1px solid var(--clr-gray-1) !important;
 }
